@@ -6,3 +6,9 @@ let userRouter = Router();
 userRouter.route("/").post(createUser);
 
 export default userRouter;
+
+/* 
+
+
+
+*/
