@@ -5,10 +5,12 @@ let userSchema = Schema(
     name: {
       type: String,
       required: [true, "Name field is required."],
+      trim: true,
     },
     email: {
       type: String,
       required: [true, "Email is required."],
+      trim: true,
     },
     password: {
       type: String,
