@@ -1,12 +1,13 @@
 import nodemailer from "nodemailer";
+import { email, password } from "../constant.js";
 let transporterInfo = {
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
 
   auth: {
-    user: "anujkoirala01@gmail.com",
-    pass: "rhfi gqqx gmit yleg",
+    user: email,
+    pass: password,
   },
 };
 

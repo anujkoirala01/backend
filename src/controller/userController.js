@@ -43,3 +43,54 @@ export let readUser = async (req, res) => {
     });
   }
 };
+
+export let loginUser = async (req, res) => {
+  let email = req.body.email;
+  let password = req.body.password;
+  try {
+    let user = await User.findOne({ email: email });
+
+    if (user === null) {
+      res.json({
+        success: false,
+        message: "Email does not match.",
+      });
+    } else {
+      let hashPassword = bcrypt.hash(password, 10);
+      let isValidPassword = bcrypt.compare(password, hashPassword);
+      if (isValidPassword) {
+        res.json({
+          success: true,
+          message: "User logged in successfully.",
+        });
+      } else {
+        res.json({
+          success: false,
+          message: "Password does not match.",
+        });
+      }
+    }
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export let deleteUser = async (req, res) => {
+  let userId = req.params.usersId;
+  try {
+    let result = await User.findByIdAndDelete(userId);
+    res.json({
+      success: true,
+      message: "User deleted successfully.",
+      result: result,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
