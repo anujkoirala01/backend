@@ -94,3 +94,20 @@ export let deleteUser = async (req, res) => {
     });
   }
 };
+
+export let readUserById = async (req, res) => {
+  let userId = req.params.usersId;
+  try {
+    let result = await User.findById(userId);
+    res.json({
+      success: true,
+      message: "User read successfully by ID",
+      result: result,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
