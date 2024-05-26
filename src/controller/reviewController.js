@@ -19,7 +19,7 @@ export let createReview = async (req, res) => {
 
 export let readReview = async (req, res) => {
   try {
-    let result = await Review.find({});
+    let result = await Review.find({}).populate("reviewId", "name email -_id");
     res.json({
       success: true,
       message: "Review Read Successfully",
@@ -57,6 +57,24 @@ export let readReviewById = async (req, res) => {
     res.json({
       success: true,
       message: "Review read successfully by ID",
+      result: result,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export let updateReview = async (req, res) => {
+  let reviewId = req.params.reviewsId;
+  let reviewData = req.body;
+  try {
+    let result = await Review.findByIdAndUpdate(reviewId, reviewData);
+    res.json({
+      success: true,
+      message: "Review updated successfully",
       result: result,
     });
   } catch (error) {

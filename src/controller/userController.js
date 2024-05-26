@@ -1,12 +1,12 @@
 import { User } from "../model/model.js";
-import bcrypt from "bcrypt";
 import { sendEmail } from "../utils/sendEmail.js";
+import { comparePassword, hashPassword } from "../utils/hashPassword.js";
 
 export let createUser = async (req, res) => {
   let userData = req.body;
   let password = userData.password;
   try {
-    let hashPassword = await bcrypt.hash(password, 10); // 10 --> SaltRound
+    let hashPassword = await hashPassword(password);
     userData.password = hashPassword;
     let result = await User.create(userData);
     await sendEmail({
@@ -56,8 +56,8 @@ export let loginUser = async (req, res) => {
         message: "Email does not match.",
       });
     } else {
-      let hashPassword = bcrypt.hash(password, 10);
-      let isValidPassword = bcrypt.compare(password, hashPassword);
+      let hashPassword = await hashPassword(password);
+      let isValidPassword = await comparePassword(password, hashPassword);
       if (isValidPassword) {
         res.json({
           success: true,
@@ -102,6 +102,24 @@ export let readUserById = async (req, res) => {
     res.json({
       success: true,
       message: "User read successfully by ID",
+      result: result,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export let updateUser = async (req, res) => {
+  let userId = req.params.usersId;
+  let userData = req.body;
+  try {
+    let result = await User.findByIdAndUpdate(userId, userData);
+    res.json({
+      success: true,
+      message: "User updated successfully",
       result: result,
     });
   } catch (error) {

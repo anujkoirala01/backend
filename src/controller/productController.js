@@ -1,6 +1,5 @@
 import { Product } from "../model/model.js";
 
-
 export let createProduct = async (req, res) => {
   let productData = req.body;
   try {
@@ -34,7 +33,6 @@ export let readProduct = async (req, res) => {
   }
 };
 
-
 export let deleteProduct = async (req, res) => {
   let productId = req.params.productsId;
   try {
@@ -59,6 +57,24 @@ export let readProductById = async (req, res) => {
     res.json({
       success: true,
       message: "Product read successfully by ID",
+      result: result,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export let updateProduct = async (req, res) => {
+  let productId = req.params.productsId;
+  let productData = req.body;
+  try {
+    let result = await Product.findByIdAndUpdate(productId, productData);
+    res.json({
+      success: true,
+      message: "Product updated successfully",
       result: result,
     });
   } catch (error) {
