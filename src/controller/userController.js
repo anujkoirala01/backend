@@ -1,6 +1,8 @@
 import { User } from "../model/model.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { comparePassword, hashPassword } from "../utils/hashPassword.js";
+import { generateToken } from "../utils/token.js";
+import { secretKey } from "../constant.js";
 
 export let createUser = async (req, res) => {
   let userData = req.body;
@@ -59,9 +61,20 @@ export let loginUser = async (req, res) => {
       let hashPassword = await hashPassword(password);
       let isValidPassword = await comparePassword(password, hashPassword);
       if (isValidPassword) {
+        let infoObj = {
+          id: user._id,
+        };
+
+        let expiryInfo = {
+          expiresIn: "5d",
+        };
+
+        let token = generateToken(infoObj, secretKey, expiryInfo);
+
         res.json({
           success: true,
           message: "User logged in successfully.",
+          result: token,
         });
       } else {
         res.json({
@@ -70,6 +83,26 @@ export let loginUser = async (req, res) => {
         });
       }
     }
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export let myProfile = async (req, res) => {
+  let bearerToken = req.headers.authorization;
+  let token = bearerToken.split(" ")[1];
+  try {
+    let infoObj = verifyToken(token, secretKey);
+    let id = infoObj.id;
+    let result = await User.findById({ id });
+    res.json({
+      success: true,
+      message: "Profile Read Successfully",
+      result: result,
+    });
   } catch (error) {
     res.json({
       success: false,
