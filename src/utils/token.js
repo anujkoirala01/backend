@@ -1,14 +1,11 @@
-import expressAsyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
 
-export let generateToken = expressAsyncHandler(
-  async (info, secretKey, expiryInfo) => {
-    let _token = await jwt.sign(info, secretKey, expiryInfo);
-    return _token;
-  }
-);
+export let generateToken =  (info, secretKey, expiryInfo) => {
+  let _token =  jwt.sign(info, secretKey, expiryInfo);
+  return _token;
+};
 
-export let verifyToken = expressAsyncHandler(async (token, secretKey) => {
-  let infoObj = await jwt.verify(token, secretKey);
+export let verifyToken = (token, secretKey) => {
+  let infoObj =  jwt.verify(token, secretKey);
   return infoObj;
-});
+};

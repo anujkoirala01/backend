@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 
-export let hashPassword = async (password) => {
+export let hash = async (password) => {
   let _hashPassword = await bcrypt.hash(password, 10); // 10 --> SaltRound
   return _hashPassword;
 };

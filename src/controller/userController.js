@@ -1,14 +1,14 @@
 import { User } from "../model/model.js";
 import { sendEmail } from "../utils/sendEmail.js";
-import { comparePassword, hashPassword } from "../utils/hashPassword.js";
-import { generateToken } from "../utils/token.js";
+import { comparePassword, hash } from "../utils/hashing.js";
+import { generateToken, verifyToken } from "../utils/token.js";
 import { secretKey } from "../constant.js";
 
 export let createUser = async (req, res) => {
   let userData = req.body;
   let password = userData.password;
   try {
-    let hashPassword = await hashPassword(password);
+    let hashPassword = await hash(password);
     userData.password = hashPassword;
     let result = await User.create(userData);
     await sendEmail({
@@ -58,7 +58,7 @@ export let loginUser = async (req, res) => {
         message: "Email does not match.",
       });
     } else {
-      let hashPassword = await hashPassword(password);
+      let hashPassword = await hash(password);
       let isValidPassword = await comparePassword(password, hashPassword);
       if (isValidPassword) {
         let infoObj = {
@@ -97,7 +97,8 @@ export let myProfile = async (req, res) => {
   try {
     let infoObj = verifyToken(token, secretKey);
     let id = infoObj.id;
-    let result = await User.findById({ id });
+    let result = await User.findById(id); // findById({id}) : passing an object {} --> Error: "Cast to ObjectId failed for value \"my-profile\" (type string)
+    // at path \"_id\" for model \"User\"" /my-profile is not a id
     res.json({
       success: true,
       message: "Profile Read Successfully",
