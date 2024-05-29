@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
+import { url } from "../constant.js";
 
 let connectToMongoDB = async () => {
   try {
-    await mongoose.connect("mongodb://0.0.0.0:27017/firstDB");
+    await mongoose.connect(url);
     console.log("Application is connected to mongo DB successfully");
   } catch (error) {
     console.log(error.message);

@@ -12,7 +12,7 @@ export let createUser = async (req, res) => {
     userData.password = hashPassword;
     let result = await User.create(userData);
     await sendEmail({
-      from: "AK",
+      from: "'Node.js'<anujkoirala@gmail.com>",
       to: [req.body.email],
       subject: "Email Verification",
       html: `<h1>You have been successfully registered.</h1>`,
