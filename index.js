@@ -5,9 +5,14 @@ import productRouter from "./src/router/productRouter.js";
 import reviewRouter from "./src/router/reviewRouter.js";
 import fileRouter from "./src/router/fileRouter.js";
 import { port } from "./src/constant.js";
+import cors from "cors";
 
 let expressApp = express();
+
+expressApp.use(cors());
+
 expressApp.use(json());
+
 expressApp.listen(port, () => {
   console.log("App is listening on port 8000");
 });
