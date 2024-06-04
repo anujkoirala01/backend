@@ -1,5 +1,6 @@
 import { secretKey } from "../constant.js";
 import { WebUser } from "../model/model.js";
+import { catchAsync } from "../utils/catchAsync.js";
 import { comparePassword, hash } from "../utils/hashing.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { generateToken, verifyToken } from "../utils/token.js";
@@ -259,3 +260,52 @@ export const deleteWebUserById = async (req, res) => {
     });
   }
 };
+
+export const forgotPassword = catchAsync(async (req, res) => {
+  let email = req.body.email;
+  let result = await WebUser.findOne({ email: email });
+  if (result) {
+    let infoObj = {
+      _id: result._id,
+    };
+    let expiryInfo = {
+      expiresIn: "5d",
+    };
+
+    let token = generateToken(infoObj, secretKey, expiryInfo);
+
+    await sendEmail({
+      from: "'Web User'<noreply@test.com>",
+      to: email,
+      subject: "Reset Password",
+      html: `<h1>click the link to reset your password .</h1>
+        <a href="http://localhost:3000/reset-password?token=${token}">http://localhost:3000/reset-password?token=${token}</a>
+        `,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Link has been sent ,to reset password, to your email",
+    });
+  } else {
+    res.json({
+      success: false,
+      message: "Email does not exist.",
+    });
+  }
+});
+
+export const resetPassword = catchAsync(async (req, res) => {
+  let hashPassword = await hash(req.body.password);
+  let result = await WebUser.findByIdAndUpdate(
+    req._id,
+    { password: hashPassword },
+    { new: true }
+  );
+
+  res.status(201).json({
+    success: true,
+    message: "Password Reset Successfully",
+    data: result,
+  });
+});
