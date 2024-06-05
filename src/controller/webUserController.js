@@ -76,10 +76,10 @@ export const loginWebUser = async (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   try {
-    let webUser = await WebUser.findOne({ email: email });
+    let user = await WebUser.findOne({ email: email });
 
-    if (webUser) {
-      if (webUser.isVerifiedEMail) {
+    if (user) {
+      if (user.isVerifiedEMail) {
         let hashPassword = await hash(password);
         let isValidPassword = await comparePassword(password, hashPassword);
         if (isValidPassword) {
@@ -96,7 +96,8 @@ export const loginWebUser = async (req, res) => {
           res.status(200).json({
             success: true,
             message: "WebUser logged in successfully.",
-            result: token,
+            data: user,
+            token: token,
           });
         } else {
           let error = new Error("Credential does not match");
