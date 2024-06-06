@@ -35,7 +35,7 @@ webUserRouter.route("/update-password").patch(isAuthenticated, updatePassword);
 
 webUserRouter.route("/forgot-password").post(forgotPassword);
 
-webUserRouter.route("/reset-password").post(isAuthenticated, resetPassword);
+webUserRouter.route("/reset-password").patch(isAuthenticated, resetPassword);
 
 webUserRouter
   .route("/:id")

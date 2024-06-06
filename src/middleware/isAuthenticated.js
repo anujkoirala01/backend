@@ -1,9 +1,9 @@
-import { secretKey } from "../constant";
-import { verifyToken } from "../utils/token";
+import { secretKey } from "../constant.js";
+import { verifyToken } from "../utils/token.js";
 
 let isAuthenticated = async (req, res, next) => {
-  let tokenString = req.headers.authorization;
-  let token = tokenString.split(" ")[1];
+  let bearerToken = req.headers.authorization;
+  let token = bearerToken.split(" ")[1];
   try {
     let user = verifyToken(token, secretKey);
     req._id = user._id;

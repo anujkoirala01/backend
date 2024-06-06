@@ -11,7 +11,7 @@ export const createWebUser = async (req, res) => {
     let hashPassword = await hash(webUserData.password);
     webUserData = {
       ...webUserData,
-      isVerifiedEMail: false,
+      isVerifiedEmail: false,
       password: hashPassword,
     };
     let result = await WebUser.create(webUserData);
@@ -30,7 +30,7 @@ export const createWebUser = async (req, res) => {
       from: "'Web User'<noreply@test.com>",
       to: [webUserData.email],
       subject: "Email Verification",
-      html: `<h1>Your account has been created successfully .</h1>
+      html: `<h1>Your account has been created successfully.</h1>
       <a href="http://localhost:3000/verify-email?token=${token}">http://localhost:3000/verify-email?token=${token}</a>
       `,
     });
@@ -56,7 +56,7 @@ export const verifyEmail = async (req, res) => {
 
     let result = await WebUser.findByIdAndUpdate(
       id,
-      { isVerifiedEMail: true },
+      { isVerifiedEmail: true },
       { new: true }
     );
     res.status(201).json({
@@ -79,12 +79,12 @@ export const loginWebUser = async (req, res) => {
     let user = await WebUser.findOne({ email: email });
 
     if (user) {
-      if (user.isVerifiedEMail) {
+      if (user.isVerifiedEmail) {
         let hashPassword = await hash(password);
         let isValidPassword = await comparePassword(password, hashPassword);
         if (isValidPassword) {
           let infoObj = {
-            _id: webUser._id,
+            _id: user._id,
           };
 
           let expiryInfo = {
@@ -138,12 +138,11 @@ export const myProfile = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  let _id = req._id;
-  let data = req.data;
+  let data = req.body;
   delete data.email;
   delete data.password;
   try {
-    let result = await WebUser.findByIdAndUpdate(_id, data, { new: true });
+    let result = await WebUser.findByIdAndUpdate(req._id, data, { new: true });
     res.status(201).json({
       success: true,
       message: "Profile updated successfully",
@@ -158,18 +157,18 @@ export const updateProfile = async (req, res) => {
 };
 
 export const updatePassword = async (req, res) => {
-  let _id = req._id;
-  let oldPassword = req.body.oldPassword;
-  let newPassword = req.body.newPassword;
   try {
-    let data = await WebUser.findById(_id);
+    let data = await WebUser.findById(req._id);
     let hashPassword = data.password;
-    let isValidPassword = await comparePassword(oldPassword, hashPassword);
+    let isValidPassword = await comparePassword(
+      req.body.oldPassword,
+      hashPassword
+    );
     if (isValidPassword) {
-      let newHashPassword = await hash(newPassword);
+      let newHashPassword = await hash(req.body.newPassword);
 
       let result = await WebUser.findByIdAndUpdate(
-        _id,
+        req._id,
         { password: newHashPassword },
         { new: true }
       );
@@ -224,34 +223,16 @@ export const readWebUserById = async (req, res) => {
 };
 
 export const updateWebUserById = async (req, res) => {
-  let webUserId = req.params.id;
   let webUserData = req.body;
   delete webUserData.email;
   delete webUserData.password;
   try {
-    let result = await WebUser.findByIdAndUpdate(webUserId, webUserData, {
+    let result = await WebUser.findByIdAndUpdate(req.params.id, webUserData, {
       new: true,
     });
     res.status(201).json({
       success: true,
       message: "WebUser updated successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-export const deleteWebUserById = async (req, res) => {
-  let webUserId = req.params.id;
-  try {
-    let result = await WebUser.findByIdAndDelete(webUserId);
-    res.status(200).json({
-      success: true,
-      message: "WebUser deleted successfully.",
       result: result,
     });
   } catch (error) {
@@ -310,3 +291,20 @@ export const resetPassword = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+export const deleteWebUserById = async (req, res) => {
+  let webUserId = req.params.id;
+  try {
+    let result = await WebUser.findByIdAndDelete(webUserId);
+    res.status(200).json({
+      success: true,
+      message: "WebUser deleted successfully.",
+      result: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
