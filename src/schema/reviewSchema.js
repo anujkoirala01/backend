@@ -2,9 +2,9 @@ import { Schema } from "mongoose";
 
 const reviewSchema = Schema(
   {
-    userId: {
+    webUserId: {
       type: Schema.ObjectId,
-      ref: "User",
+      ref: "WebUser",
       required: [true, "productId field is required"],
       trim: true,
     },

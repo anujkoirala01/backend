@@ -6,15 +6,20 @@ import {
   readProductById,
   updateProduct,
 } from "../controller/productController.js";
+import isAuthenticated from "../middleware/isAuthenticated.js";
+import isAuthorized from "../middleware/isAuthorized.js";
 
 let productRouter = Router();
 
-productRouter.route("/").post(createProduct).get(readProduct);
+productRouter
+  .route("/")
+  .post(isAuthenticated, isAuthorized(["admin"]), createProduct)
+  .get(readProduct);
 
 productRouter
   .route("/:productsId")
-  .delete(deleteProduct)
+  .delete(isAuthenticated, isAuthorized(["admin", "superadmin"]), deleteProduct)
   .get(readProductById)
-  .patch(updateProduct);
+  .patch(isAuthenticated, isAuthorized(["admin"]), updateProduct);
 
 export default productRouter;

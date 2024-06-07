@@ -3,258 +3,162 @@ import { WebUser } from "../model/model.js";
 import { catchAsync } from "../utils/catchAsync.js";
 import { comparePassword, hash } from "../utils/hashing.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import successResponse from "../utils/successResponse.js";
 import { generateToken, verifyToken } from "../utils/token.js";
 
-export const createWebUser = async (req, res) => {
+export const createWebUser = catchAsync(async (req, res) => {
   let webUserData = req.body;
-  try {
-    let hashPassword = await hash(webUserData.password);
-    webUserData = {
-      ...webUserData,
-      isVerifiedEmail: false,
-      password: hashPassword,
-    };
-    let result = await WebUser.create(webUserData);
+  const hashPassword = await hash(webUserData.password);
+  webUserData = {
+    ...webUserData,
+    isVerifiedEmail: false,
+    password: hashPassword,
+  };
+  const result = await WebUser.create(webUserData);
 
-    let infoObj = {
-      id: result._id,
-    };
+  const infoObj = {
+    id: result._id,
+  };
 
-    let expiryInfo = {
-      expiresIn: "5d",
-    };
+  const expiryInfo = {
+    expiresIn: "5d",
+  };
 
-    let token = generateToken(infoObj, secretKey, expiryInfo);
+  const token = generateToken(infoObj, secretKey, expiryInfo);
 
-    await sendEmail({
-      from: "'Web User'<noreply@test.com>",
-      to: [webUserData.email],
-      subject: "Email Verification",
-      html: `<h1>Your account has been created successfully.</h1>
+  await sendEmail({
+    from: "'Web User'<noreply@test.com>",
+    to: [webUserData.email],
+    subject: "Email Verification",
+    html: `<h1>Your account has been created successfully.</h1>
       <a href="http://localhost:3000/verify-email?token=${token}">http://localhost:3000/verify-email?token=${token}</a>
       `,
-    });
-    res.status(201).json({
-      success: true,
-      message: "WebUser created successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+  });
 
-export const verifyEmail = async (req, res) => {
-  let bearerToken = req.headers.authorization;
-  let token = bearerToken.split(" ")[1];
-  try {
-    let infoObj = verifyToken(token, secretKey);
-    let id = infoObj.id;
+  successResponse(res, 201, "WebUser created successfully", result);
+});
 
-    let result = await WebUser.findByIdAndUpdate(
-      id,
-      { isVerifiedEmail: true },
-      { new: true }
-    );
-    res.status(201).json({
-      success: true,
-      message: "User Verified Successfully.",
-      result: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
+export const verifyEmail = catchAsync(async (req, res) => {
+  const bearerToken = req.headers.authorization;
+  const token = bearerToken.split(" ")[1];
+  const infoObj = verifyToken(token, secretKey);
+  const id = infoObj.id;
 
-export const loginWebUser = async (req, res) => {
-  let email = req.body.email;
-  let password = req.body.password;
-  try {
-    let user = await WebUser.findOne({ email: email });
+  const result = await WebUser.findByIdAndUpdate(
+    id,
+    { isVerifiedEmail: true },
+    { new: true }
+  );
+  successResponse(res, 201, "User Verified Successfully.", result);
+});
 
-    if (user) {
-      if (user.isVerifiedEmail) {
-        let hashPassword = await hash(password);
-        let isValidPassword = await comparePassword(password, hashPassword);
-        if (isValidPassword) {
-          let infoObj = {
-            _id: user._id,
-          };
+export const loginWebUser = catchAsync(async (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
 
-          let expiryInfo = {
-            expiresIn: "5d",
-          };
+  const user = await WebUser.findOne({ email: email });
 
-          let token = generateToken(infoObj, secretKey, expiryInfo);
+  if (user) {
+    if (user.isVerifiedEmail) {
+      const hashPassword = await hash(password);
+      const isValidPassword = await comparePassword(password, hashPassword);
+      if (isValidPassword) {
+        const infoObj = {
+          _id: user._id,
+        };
 
-          res.status(200).json({
-            success: true,
-            message: "WebUser logged in successfully.",
-            data: user,
-            token: token,
-          });
-        } else {
-          let error = new Error("Credential does not match");
-          throw error;
-        }
+        const expiryInfo = {
+          expiresIn: "5d",
+        };
+
+        const token = generateToken(infoObj, secretKey, expiryInfo);
+
+        successResponse(res, 200, "WebUser logged in successfully.", token);
       } else {
-        let error = new Error("Credential not found");
+        let error = new Error("Credential does not match");
         throw error;
       }
     } else {
       let error = new Error("Credential not found");
       throw error;
     }
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+  } else {
+    let error = new Error("Credential not found");
+    throw error;
   }
-};
+});
 
-export const myProfile = async (req, res) => {
-  let _id = req._id;
-  try {
-    let result = await WebUser.findById(_id); // findById({id}) : passing an object {} --> Error: "Cast to ObjectId failed for value \"my-profile\" (type string)
-    // at path \"_id\" for model \"WebUser\"" /my-profile is not a id
-    res.status(200).json({
-      success: true,
-      message: "Profile Read Successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const myProfile = catchAsync(async (req, res) => {
+  const result = await WebUser.findById(req._id); // findById({id}) : passing an object {} --> Error: "Cast to ObjectId failed for value \"my-profile\" (type string)
+  // at path \"_id\" for model \"WebUser\"" /my-profile is not a id
 
-export const updateProfile = async (req, res) => {
-  let data = req.body;
+  successResponse(res, 200, "Profile Read Successfully", result);
+});
+
+export const updateProfile = catchAsync(async (req, res) => {
+  const data = req.body;
   delete data.email;
   delete data.password;
-  try {
-    let result = await WebUser.findByIdAndUpdate(req._id, data, { new: true });
-    res.status(201).json({
-      success: true,
-      message: "Profile updated successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
 
-export const updatePassword = async (req, res) => {
-  try {
-    let data = await WebUser.findById(req._id);
-    let hashPassword = data.password;
-    let isValidPassword = await comparePassword(
-      req.body.oldPassword,
-      hashPassword
+  const result = await WebUser.findByIdAndUpdate(req._id, data, { new: true });
+
+  successResponse(res, 201, "Profile updated successfully", result);
+});
+
+export const updatePassword = catchAsync(async (req, res) => {
+  const data = await WebUser.findById(req._id);
+  const hashPassword = data.password;
+  const isValidPassword = await comparePassword(
+    req.body.oldPassword,
+    hashPassword
+  );
+  if (isValidPassword) {
+    const newHashPassword = await hash(req.body.newPassword);
+
+    const result = await WebUser.findByIdAndUpdate(
+      req._id,
+      { password: newHashPassword },
+      { new: true }
     );
-    if (isValidPassword) {
-      let newHashPassword = await hash(req.body.newPassword);
-
-      let result = await WebUser.findByIdAndUpdate(
-        req._id,
-        { password: newHashPassword },
-        { new: true }
-      );
-      res.status(201).json({
-        success: true,
-        message: "Password Updated Successfully",
-
-        result: result,
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: "Old Password does not match.",
-      });
-    }
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    successResponse(res, 201, "Password Updated Successfully", result);
+  } else {
+    let error = new Error("Old Password does not match.");
+    throw error;
   }
-};
+});
 
-export const readAllWebUser = async (req, res) => {
-  try {
-    let result = await WebUser.find({});
-    res.status(200).json({
-      success: true,
-      message: "All WebUser Read Successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const readAllWebUser = catchAsync(async (req, res) => {
+  const result = await WebUser.find({});
+  successResponse(res, 200, "All WebUser Read Successfully", result);
+});
 
-export const readWebUserById = async (req, res) => {
-  let webUserId = req.params.id;
-  try {
-    let result = await WebUser.findById(webUserId);
-    res.status(200).json({
-      success: true,
-      message: "WebUser read successfully by ID",
-      result: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const readWebUserById = catchAsync(async (req, res) => {
+  const result = await WebUser.findById(req.params.id);
+  successResponse(res, 200, "WebUser read successfully by ID", result);
+});
 
-export const updateWebUserById = async (req, res) => {
-  let webUserData = req.body;
+export const updateWebUserById = catchAsync(async (req, res) => {
+  const webUserData = req.body;
   delete webUserData.email;
   delete webUserData.password;
-  try {
-    let result = await WebUser.findByIdAndUpdate(req.params.id, webUserData, {
-      new: true,
-    });
-    res.status(201).json({
-      success: true,
-      message: "WebUser updated successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+  const result = await WebUser.findByIdAndUpdate(req.params.id, webUserData, {
+    new: true,
+  });
+  successResponse(res, 201, "WebUser updated successfully", result);
+});
 
 export const forgotPassword = catchAsync(async (req, res) => {
-  let email = req.body.email;
-  let result = await WebUser.findOne({ email: email });
+  const email = req.body.email;
+  const result = await WebUser.findOne({ email: email });
   if (result) {
-    let infoObj = {
+    const infoObj = {
       _id: result._id,
     };
-    let expiryInfo = {
+    const expiryInfo = {
       expiresIn: "5d",
     };
 
-    let token = generateToken(infoObj, secretKey, expiryInfo);
+    const token = generateToken(infoObj, secretKey, expiryInfo);
 
     await sendEmail({
       from: "'Web User'<noreply@test.com>",
@@ -264,47 +168,28 @@ export const forgotPassword = catchAsync(async (req, res) => {
         <a href="http://localhost:3000/reset-password?token=${token}">http://localhost:3000/reset-password?token=${token}</a>
         `,
     });
-
-    res.status(200).json({
-      success: true,
-      message: "Link has been sent ,to reset password, to your email",
-    });
+    successResponse(
+      res,
+      200,
+      "A link has been sent to your email to reset your password."
+    );
   } else {
-    res.json({
-      success: false,
-      message: "Email does not exist.",
-    });
+    let error = new Error("Email does not exist.");
+    throw error;
   }
 });
 
 export const resetPassword = catchAsync(async (req, res) => {
-  let hashPassword = await hash(req.body.password);
-  let result = await WebUser.findByIdAndUpdate(
+  const hashPassword = await hash(req.body.password);
+  const result = await WebUser.findByIdAndUpdate(
     req._id,
     { password: hashPassword },
     { new: true }
   );
-
-  res.status(201).json({
-    success: true,
-    message: "Password Reset Successfully",
-    data: result,
-  });
+  successResponse(res, 201, "Password Reset Successfully", result);
 });
 
-export const deleteWebUserById = async (req, res) => {
-  let webUserId = req.params.id;
-  try {
-    let result = await WebUser.findByIdAndDelete(webUserId);
-    res.status(200).json({
-      success: true,
-      message: "WebUser deleted successfully.",
-      result: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const deleteWebUserById = catchAsync(async (req, res) => {
+  const result = await WebUser.findByIdAndDelete(req.params.id);
+  successResponse(res, 200, "WebUser deleted successfully.", result);
+});

@@ -13,7 +13,7 @@ import {
   updateWebUserById,
   verifyEmail,
 } from "../controller/webUserController.js";
-import authorized from "../middleware/authorized.js";
+import isAuthorized from "../middleware/isAuthorized.js";
 import isAuthenticated from "../middleware/isAuthenticated.js";
 
 let webUserRouter = Router();
@@ -21,7 +21,7 @@ let webUserRouter = Router();
 webUserRouter
   .route("/")
   .post(createWebUser)
-  .get(isAuthenticated, authorized(["admin", "superadmin"]), readAllWebUser);
+  .get(isAuthenticated, isAuthorized(["admin", "superadmin"]), readAllWebUser);
 
 webUserRouter.route("/verify-email").patch(verifyEmail);
 
@@ -39,13 +39,13 @@ webUserRouter.route("/reset-password").patch(isAuthenticated, resetPassword);
 
 webUserRouter
   .route("/:id")
-  .get(isAuthenticated, authorized(["admin", "superadmin"]), readWebUserById)
+  .get(isAuthenticated, isAuthorized(["admin", "superadmin"]), readWebUserById)
   .patch(
     isAuthenticated,
-    authorized(["admin", "superadmin"]),
+    isAuthorized(["admin", "superadmin"]),
     updateWebUserById
   )
-  .delete(isAuthenticated, authorized(["superadmin"]), deleteWebUserById);
+  .delete(isAuthenticated, isAuthorized(["superadmin"]), deleteWebUserById);
 
 export default webUserRouter;
 

@@ -1,11 +1,10 @@
+import cors from "cors";
 import express, { json } from "express";
 import connectToMongoDB from "./src/connectToDB/connectToMongoDB.js";
-import userRouter from "./src/router/userRouter.js";
+import { port } from "./src/constant.js";
+import fileRouter from "./src/router/fileRouter.js";
 import productRouter from "./src/router/productRouter.js";
 import reviewRouter from "./src/router/reviewRouter.js";
-import fileRouter from "./src/router/fileRouter.js";
-import { port } from "./src/constant.js";
-import cors from "cors";
 import webUserRouter from "./src/router/webUserRouter.js";
 
 let expressApp = express();
@@ -22,7 +21,6 @@ expressApp.use(express.static("./public"));
 
 connectToMongoDB();
 
-expressApp.use("/users", userRouter);
 expressApp.use("/products", productRouter);
 expressApp.use("/reviews", reviewRouter);
 expressApp.use("/files", fileRouter);

@@ -1,86 +1,32 @@
+import successResponse from "../utils/successResponse.js";
 import { Review } from "../model/model.js";
+import { catchAsync } from "../utils/catchAsync.js";
 
-export let createReview = async (req, res) => {
-  let reviewData = req.body;
-  try {
-    let result = await Review.create(reviewData);
-    res.json({
-      success: true,
-      message: "Review created successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const createReview = catchAsync(async (req, res) => {
+  const result = await Review.create(req.body);
+  successResponse(res, 201, "Review created successfully", result);
+});
 
-export let readReview = async (req, res) => {
-  try {
-    let result = await Review.find({}).populate("reviewId", "name email -_id");
-    res.json({
-      success: true,
-      message: "Review Read Successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const readReview = catchAsync(async (req, res) => {
+  const result = await Review.find({}).populate("reviewId", "name email -_id");
+  successResponse(res, 200, "Review Read Successfully", result);
+});
 
-export let deleteReview = async (req, res) => {
-  let reviewId = req.params.reviewsId;
-  try {
-    let result = await Review.findByIdAndDelete(reviewId);
-    res.json({
-      success: true,
-      message: "Review deleted successfully.",
-      result: result,
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const deleteReview = catchAsync(async (req, res) => {
+  const result = await Review.findByIdAndDelete(req.params.reviewsId);
+  successResponse(res, 200, "Review deleted successfully.", result);
+});
 
-export let readReviewById = async (req, res) => {
-  let reviewId = req.params.reviewsId;
-  try {
-    let result = await Review.findById(reviewId);
-    res.json({
-      success: true,
-      message: "Review read successfully by ID",
-      result: result,
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const readReviewById = catchAsync(async (req, res) => {
+  const result = await Review.findById(req.params.reviewsId);
+  successResponse(res, 200, "Review read successfully by ID", result);
+});
 
-export let updateReview = async (req, res) => {
-  let reviewId = req.params.reviewsId;
-  let reviewData = req.body;
-  try {
-    let result = await Review.findByIdAndUpdate(reviewId, reviewData);
-    res.json({
-      success: true,
-      message: "Review updated successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const updateReview = catchAsync(async (req, res) => {
+  const result = await Review.findByIdAndUpdate(
+    req.params.reviewsId,
+    req.body,
+    { new: true }
+  );
+  successResponse(res, 201, "Review updated successfully", result);
+});

@@ -1,86 +1,31 @@
 import { Product } from "../model/model.js";
+import { catchAsync } from "../utils/catchAsync.js";
 
-export let createProduct = async (req, res) => {
-  let productData = req.body;
-  try {
-    let result = await Product.create(productData);
-    res.json({
-      success: true,
-      message: "Product created successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const createProduct = catchAsync(async (req, res) => {
+  const result = await Product.create(req.body);
+  successResponse(res, 201, "Product updated successfully", result);
+});
 
-export let readProduct = async (req, res) => {
-  try {
-    let result = await Product.find({});
-    res.json({
-      success: true,
-      message: "Product Read Successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const readProduct = catchAsync(async (req, res) => {
+  const result = await Product.find({});
+  successResponse(res, 200, "Product Read Successfully", result);
+});
 
-export let deleteProduct = async (req, res) => {
-  let productId = req.params.productsId;
-  try {
-    let result = await Product.findByIdAndDelete(productId);
-    res.json({
-      success: true,
-      message: "Product deleted successfully.",
-      result: result,
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const deleteProduct = catchAsync(async (req, res) => {
+  const result = await Product.findByIdAndDelete(req.params.productsId);
+  successResponse(res, 200, "Product deleted successfully.", result);
+});
 
-export let readProductById = async (req, res) => {
-  let productId = req.params.productsId;
-  try {
-    let result = await Product.findById(productId);
-    res.json({
-      success: true,
-      message: "Product read successfully by ID",
-      result: result,
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const readProductById = catchAsync(async (req, res) => {
+  const result = await Product.findById(req.params.productsId);
+  successResponse(res, 200, "Product read successfully by ID", result);
+});
 
-export let updateProduct = async (req, res) => {
-  let productId = req.params.productsId;
-  let productData = req.body;
-  try {
-    let result = await Product.findByIdAndUpdate(productId, productData);
-    res.json({
-      success: true,
-      message: "Product updated successfully",
-      result: result,
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const updateProduct = catchAsync(async (req, res) => {
+  const result = await Product.findByIdAndUpdate(
+    req.params.productsId,
+    req.body,
+    { new: true }
+  );
+  successResponse(res, 201, "Product updated successfully", result);
+});
