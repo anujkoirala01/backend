@@ -1,5 +1,6 @@
 import { Product } from "../model/model.js";
 import { catchAsync } from "../utils/catchAsync.js";
+import successResponse from "../utils/successResponse.js";
 
 export const createProduct = catchAsync(async (req, res) => {
   const result = await Product.create(req.body);
