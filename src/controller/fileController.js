@@ -1,5 +1,5 @@
-import { catchAsync } from "../utils/catchAsync";
-import successResponse from "../utils/successResponse";
+import { catchAsync } from "../utils/catchAsync.js";
+import successResponse from "../utils/successResponse.js";
 
 export let createFile = catchAsync(async (req, res) => {
   console.log(req.file);
