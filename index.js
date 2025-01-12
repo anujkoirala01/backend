@@ -17,6 +17,10 @@ expressApp.listen(port, () => {
   console.log(`App is listening on port ${port}`);
 });
 
+expressApp.listen("/", (req, res) => {
+  res.send(`Welcome to my API!`);
+});
+
 expressApp.use(express.static("./public"));
 
 connectToMongoDB();
