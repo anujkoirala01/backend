@@ -14,7 +14,7 @@ expressApp.use(cors());
 expressApp.use(json());
 
 expressApp.listen(port, () => {
-  console.log("App is listening on port 8000");
+  console.log(`App is listening on port ${port}`);
 });
 
 expressApp.use(express.static("./public"));

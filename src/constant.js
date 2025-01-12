@@ -8,6 +8,6 @@ export let password = process.env.PASSWORD;
 
 export let secretKey = process.env.SECRET_KEY;
 
-export let port = process.env.PORT;
+export let port = process.env.PORT || 3000;
 
 export let url = process.env.DB_URL;
